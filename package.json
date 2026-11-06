@@ -1,0 +1,7 @@
+{
+  "name": "alraqi-store",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Al-Raqi electronics store: static frontend plus Vercel serverless email routes (Resend)",
+  "engines": { "node": ">=18" }
+}
