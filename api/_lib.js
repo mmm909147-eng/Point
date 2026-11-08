@@ -2,9 +2,16 @@ const crypto = require("crypto");
 
 const RESEND_URL = "https://api.resend.com/emails";
 
+// Browser origins allowed to call the API (comma-separated env var, defaults to the store domain).
+const ORIGINS = () =>
+  (process.env.ALLOWED_ORIGIN || "https://alraqiksa.shop,https://www.alraqiksa.shop")
+    .split(",").map((o) => o.trim()).filter(Boolean);
+
 // CORS + method guard. Returns true when the request was fully handled.
 function cors(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", process.env.ALLOWED_ORIGIN || "*");
+  const list = ORIGINS();
+  const origin = req.headers.origin || "";
+  res.setHeader("Access-Control-Allow-Origin", list.includes("*") ? "*" : list.includes(origin) ? origin : list[0]);
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   res.setHeader("Vary", "Origin");
@@ -30,9 +37,8 @@ const escHtml = (s) =>
 // The API key is read from the server environment only.
 async function sendResend({ to, subject, text }) {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.MAIL_FROM;
+  const from = process.env.MAIL_FROM || "Al-Raqi <onboarding@resend.dev>";
   if (!apiKey) return { ok: false, status: 500, error: "Server not configured: RESEND_API_KEY is missing." };
-  if (!from) return { ok: false, status: 500, error: "Server not configured: MAIL_FROM is missing." };
   const recipients = (Array.isArray(to) ? to : [to]).filter(Boolean);
   if (!recipients.length) return { ok: false, status: 400, error: "No recipient address." };
 
